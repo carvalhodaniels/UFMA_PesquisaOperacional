@@ -78,6 +78,7 @@ void DadosEntrada(int *****Aula, int ****Pref, int ***cargaHoraria, int *nProfs,
             pCH = strtok (NULL, " ");
         }
     }
+
     nHorario = 0;
     nProf = 0;
     fscanf(file, "%[A-Z a-z :\n]s", buf);
@@ -85,6 +86,7 @@ void DadosEntrada(int *****Aula, int ****Pref, int ***cargaHoraria, int *nProfs,
             fseek (file, -(strlen(buf)+1), SEEK_CUR);
             //break;
         }
+
     while (!feof(file)){
         fgets(pref, 50, file);
         if(strcmp(pref, "\n") == 0){

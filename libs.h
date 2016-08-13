@@ -3,6 +3,7 @@
 */
 typedef struct candidato{
     int prof;
+    int turma;
     int dia;
     int horario;
 }Candidato;
