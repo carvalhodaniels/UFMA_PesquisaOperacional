@@ -14,7 +14,7 @@
 #define alpha 0.8
 #define T 1.0
 #define Tmin 0.000001
-#define raio 1
+#define maxTurmas 3
 //  Inicia o GRASP
 void GRASP(int *****, int ****, int ***, int *, int *, int *, int *);
 
@@ -66,6 +66,7 @@ int main(){
     //fObjetivo(Aula, Pref, nProfs, nTurmas, nDias, nHorarios);
 
     desalocar(&Aula, &Pref, &cargaHoraria, nProfs, nTurmas, nDias);
+    criaSimplex(nProfs, nTurmas, nDias, nHorarios);
     return TRUE;
 }
 
@@ -142,13 +143,17 @@ void ConsLRC(int ****Aula, int ***Pref, Candidato LRC[], int nCandidatos, int Pr
 }
 
 int eViavel(int ****Aula, Candidato c, int **cargaHoraria, int nProfs, int nTurmas, int nDias, int nHorarios){
-    int i, j, k, l, contCH = 0, contHD = 0;
-    //Restrições de Turma e Professor
+    int i, j, k, l, contCH = 0, contHD = 0;//, contTurmas = 0;
+    //int turmas[nTurmas];
+    //for(i = 0; i< nTurmas; i++)
+    //    turmas[i] = 0;
+
+    // Restrições de Turma e Professor
     for(i = 0; i < nProfs; i++)
         if(Aula[i][c.turma][c.dia][c.horario] == 1)
             return FALSE;
 
-    //Restrição de Carga Horária
+    // Restrição de Carga Horária
     for(j = 0; j < nDias; j++)
         for(k = 0; k < nHorarios; k++)
             if(Aula[c.prof][c.turma][j][k] == 1)
@@ -156,13 +161,26 @@ int eViavel(int ****Aula, Candidato c, int **cargaHoraria, int nProfs, int nTurm
     if(contCH >= cargaHoraria[c.prof][c.turma])
         return FALSE;
 
-    //Restrição de Horário Diário
+    // Restrição de Horário Diário
     for(k = 0; k < nTurmas; k++)
         for(l = 0; l < nHorarios; l++)
             if(Aula[c.prof][k][c.dia][l] == 1)
                 contHD++;
     if(contHD >= horarioDiario)
         return FALSE;
+
+    // Restrição de Turmas Mínimas
+    //for(i = 0; i < nTurmas; i++)
+    //    for(j = 0; j < nDias; j++){
+    //        for(k = 0; k < nHorarios; k++){
+    //            if((Aula[c.prof][i][j][k] == 1) && (turmas[i] == 0)){
+    //                contTurmas++;
+    //                turmas[i] = 1;
+    //            }
+    //        }
+    //    }
+    //if(contTurmas > maxTurmas)
+    //    return FALSE;
 
     return TRUE;
 }
@@ -212,7 +230,7 @@ void Simulated_Annealing(int ****Aula, int ***Pref, int **cargaHoraria, int nPro
     return;
 }
 
-//Retorna uma Solução Vizinha Randomico Viável
+// Retorna uma Solução Vizinha Randomico Viável
 int ****BuscaVizinho(int ****Aula, int **cargaHoraria, int nProfs, int nTurmas, int nDias, int nHorarios)
 {
     Candidato C;
