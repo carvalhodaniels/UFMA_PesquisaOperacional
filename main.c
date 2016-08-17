@@ -10,7 +10,7 @@
 #define FALSE 0
 #define rCandidatos 0.2
 #define nTestes 100
-#define horarioDiario 10
+#define horarioDiario 4
 #define alpha 0.8
 #define T 1.0
 #define Tmin 0.000001
@@ -65,8 +65,8 @@ int main(){
 
     //fObjetivo(Aula, Pref, nProfs, nTurmas, nDias, nHorarios);
 
+    criaSimplex(Aula, Pref, cargaHoraria, nProfs, nTurmas, nDias, nHorarios);
     desalocar(&Aula, &Pref, &cargaHoraria, nProfs, nTurmas, nDias);
-    criaSimplex(nProfs, nTurmas, nDias, nHorarios);
     return TRUE;
 }
 
@@ -162,10 +162,9 @@ int eViavel(int ****Aula, Candidato c, int **cargaHoraria, int nProfs, int nTurm
         return FALSE;
 
     // Restrição de Horário Diário
-    for(k = 0; k < nTurmas; k++)
-        for(l = 0; l < nHorarios; l++)
-            if(Aula[c.prof][k][c.dia][l] == 1)
-                contHD++;
+    for(l = 0; l < nHorarios; l++)
+        if(Aula[c.prof][c.turma][c.dia][l] == 1)
+            contHD++;
     if(contHD >= horarioDiario)
         return FALSE;
 

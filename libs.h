@@ -41,4 +41,4 @@ void ImprimeSol(int ****, int , int , int , int );
 /*
     Cria arquivo auxiliar para o Simplex
 */
-void criaSimplex();
+void criaSimplex(int ****, int ***, int **, int , int , int , int );

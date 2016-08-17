@@ -221,67 +221,96 @@ void ImprimeSol(int ****Aula, int nProfs, int nTurmas, int nDias, int nHorarios)
     }
 }
 
-void criaSimplex(int nProfs, int nTurmas, int nDias, int nHorarios){
-    FILE *fileI, *fileO;
-    char buf[20], s[20], *pS;
-    int i, j, prof = 0, turma = 0, dia = 0, horario = 0;
+void criaSimplex(int ****Aula, int ***Pref, int **cargaHoraria,int nProfs, int nTurmas, int nDias, int nHorarios){
+    FILE *fileO;
+    int i, j, k, l;
 
-    fileI = fopen("entrada.txt","r");
     fileO = fopen("simplex.txt","w");
 
-    if (fileI == NULL || fileO == NULL){
+    if (fileO == NULL){
         printf("\nErro ao abrir o arquivo.\n");
         exit(0);
     }
-    while (!feof(fileI)){
-        fscanf(fileI, "%[A-Z a-z :\n]s", buf);
-        if(strcmp(buf, "Carga Horaria:\n") != 0){
-            fseek (fileI, -(strlen(buf)+1), SEEK_CUR);
-            break;
+
+    fprintf(fileO, "Max ");
+    for(i = 0; i < nProfs; i++){
+        for(j = 0; j < nDias; j++){
+            for(k = 0; k < nHorarios; k++){
+                fprintf(fileO, "(");
+                for(l = 0; l < nTurmas-1; l++){
+                    fprintf(fileO, "x%d%d%d%d + ", i, l, j, k);
+                }
+                fprintf(fileO, "x%d%d%d%d", i, l, j, k);
+                if((i == nProfs-1) && (j == nDias-1) && (k == nHorarios-1) &&(l == nTurmas-1))
+                    fprintf(fileO, ")*%d", Pref[i][j][k]);
+                else
+                    fprintf(fileO, ")*%d + ", Pref[i][j][k]);
+            }
         }
-        turma = 0;
-        fgets(s, 50, fileI);
-        pS = strtok(s," ");
-        while (pS != NULL){
-            for(i = 0; i < nDias; i++)
-                for(j = 0; j < (nHorarios-1); j++)
-                    fprintf(fileO, "x%d%d%d%d+", prof, turma, i, j);
-            fprintf(fileO, "x%d%d%d%d", prof, turma, i, j+1);
-            fprintf(fileO, " <= ");
-            fprintf(fileO, "%s\n", pS);
-            pS = strtok(NULL, " ");
-            turma++;
-        }
-        prof++;
-    }
-    fscanf(fileI, "%[A-Z a-z :\n]s", buf);
-    if(strcmp(buf, "Preferencia:\n") != 0){
-        fseek (fileI, -(strlen(buf)+1), SEEK_CUR);
-        //break;
-    }
-    prof = 0;
-    while (!feof(fileI)){
-        fgets(s, 50, fileI);
-        if(strcmp(s, "\n") == 0){
-            fgets(s, 50, fileI);
-            prof++;
-            dia = 0;
-        }
-        //nHorario++;
-        //nDia = 0;
-        pS = strtok(s, " ");
-        horario = 0;
-        while (pS != NULL){
-            //nDia++;
-            fprintf(fileO, "y%d%d%d", prof, dia, horario);
-            fprintf(fileO, " = ");
-            fprintf(fileO, "%s\n", pS);
-            pS = strtok (NULL, " ");
-            horario++;
-        }
-        dia++;
     }
 
-    fclose(fileI);
+    fprintf(fileO, "\n\n");
+
+    for(i = 0; i < nProfs; i++){
+        for(j = 0; j < nDias; j++){
+            for(k = 0; k < nHorarios; k++){
+                fprintf(fileO, "(");
+                for(l = 0; l < nTurmas-1; l++){
+                    fprintf(fileO, "x%d%d%d%d + ", i, l, j, k);
+                }
+                fprintf(fileO, "x%d%d%d%d", i, l, j, k);
+                fprintf(fileO, ") <= 1\n");
+            }
+        }
+    }
+
+    fprintf(fileO, "\n");
+
+    for(i = 0; i < nTurmas; i++){
+        for(j = 0; j < nDias; j++){
+            for(k = 0; k < nHorarios; k++){
+                fprintf(fileO, "(");
+                for(l = 0; l < nProfs-1; l++){
+                    fprintf(fileO, "x%d%d%d%d + ", l, i, j, k);
+                }
+                fprintf(fileO, "x%d%d%d%d", l, i, j, k);
+                fprintf(fileO, ") <= 1\n");
+            }
+        }
+    }
+
+    fprintf(fileO, "\n");
+
+    for(i = 0; i < nProfs; i++){
+        for(j = 0; j < nTurmas; j++){
+            fprintf(fileO, "(");
+            for(k = 0; k < nDias; k++){
+                for(l = 0; l < nHorarios; l++){
+                    if((k == nDias-1) &&(l == nHorarios-1))
+                        break;
+                    fprintf(fileO, "x%d%d%d%d + ", i, j, k, l);
+                }
+            }
+            fprintf(fileO, "x%d%d%d%d) ", i, j, k, l);
+            fprintf(fileO, "<= ");
+            fprintf(fileO, "%d\n", cargaHoraria[i][j]);
+        }
+    }
+
+    fprintf(fileO, "\n");
+
+    for(i = 0; i < nProfs; i++){
+        for(j = 0; j < nTurmas; j++){
+            for(k = 0; k < nDias; k++){
+                fprintf(fileO, "(");
+                for(l = 0; l < nHorarios-1; l++){
+                    fprintf(fileO, "x%d%d%d%d + ", i, j, k, l);
+                }
+                fprintf(fileO, "x%d%d%d%d", i, j, k, l);
+                fprintf(fileO, ") <= 4\n");
+            }
+        }
+    }
+
     fclose(fileO);
 }
