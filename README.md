@@ -4,6 +4,7 @@ Pesquisa Operacional
 GRASP
 
 Requisitos:
+
 	GLPK:
 		Windows: http://winglpk.sourceforge.net/
 		Linux: ftp://ftp.gnu.org/gnu/glpk/
