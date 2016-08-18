@@ -39,6 +39,12 @@ void desalocar(int *****, int ****, int ***, int , int , int );
 void ImprimeSol(int ****, int , int , int , int );
 
 /*
-    Cria arquivo auxiliar para o Simplex
+    Cria o arquivo simplex.pl a ser lido e resolvido pelo Simplex
+    A saída fica no arquivo sol.txt
 */
 void criaSimplex(int ****, int ***, int **, int , int , int , int );
+
+/*
+    Cria uma nova instância
+*/
+void criarInstancia(void);

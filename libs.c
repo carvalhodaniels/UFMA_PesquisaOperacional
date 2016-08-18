@@ -1,15 +1,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "libs.h"
+
+#define CH 10
+#define tamanho 200
 
 /*
     Lê o arquivo e coloca nas estruturas
 */
 void DadosEntrada(int *****Aula, int ****Pref, int ***cargaHoraria, int *nProfs, int *nTurmas, int *nDias, int *nHorarios){
     int nProf = 0, nTurma = 0, nDia = 0, nHorario = 0;
-    char buf[20], cH[20], *pCH, pref[20], *pPref;
+    char buf[tamanho], cH[tamanho], *pCH, pref[tamanho], *pPref;
     FILE *file;
 
     file = fopen("entrada.txt","r");
@@ -23,7 +27,7 @@ void DadosEntrada(int *****Aula, int ****Pref, int ***cargaHoraria, int *nProfs,
             fseek (file, -(strlen(buf)+1), SEEK_CUR);
             break;
         }
-        fgets(cH, 50, file);
+        fgets(cH, tamanho, file);
         nProf++;
         nTurma = 0;
         pCH = strtok(cH," ");
@@ -32,13 +36,14 @@ void DadosEntrada(int *****Aula, int ****Pref, int ***cargaHoraria, int *nProfs,
             nTurma++;
         }
     }
-     while (!feof(file)){
+
+    while (!feof(file)){
         fscanf(file, "%[A-Z a-z :\n]s", buf);
         if(strcmp(buf, "Preferencia:\n") != 0){
             fseek (file, -strlen(buf)+1, SEEK_CUR);
             break;
         }
-        fgets(pref, 50, file);
+        fgets(pref, tamanho, file);
         nHorario++;
         nDia = 0;
         pPref = strtok(pref, " ");
@@ -68,7 +73,7 @@ void DadosEntrada(int *****Aula, int ****Pref, int ***cargaHoraria, int *nProfs,
             fseek (file, -(strlen(buf)+1), SEEK_CUR);
             break;
         }
-        fgets(cH, 50, file);
+        fgets(cH, tamanho, file);
         nProf++;
         nTurma = 0;
         pCH = strtok(cH," ");
@@ -79,22 +84,23 @@ void DadosEntrada(int *****Aula, int ****Pref, int ***cargaHoraria, int *nProfs,
         }
     }
 
-    nHorario = 0;
     nProf = 0;
+    nDia = 0;
+    nHorario = 0;
     fscanf(file, "%[A-Z a-z :\n]s", buf);
     if(strcmp(buf, "Preferencia:\n") != 0){
-        fseek (file, -(strlen(buf)+1), SEEK_CUR);
+        fseek (file, -(strlen(buf)), SEEK_CUR);
         //break;
     }
 
     while (!feof(file)){
-        fgets(pref, 50, file);
+        fgets(pref, tamanho, file);
         if(strcmp(pref, "\n") == 0){
-            fgets(pref, 50, file);
-            printf("\n");
+            fgets(pref, tamanho, file);
             nHorario = 0;
             nProf++;
         }
+
         nHorario++;
         nDia = 0;
         pPref = strtok(pref, " ");
@@ -104,6 +110,7 @@ void DadosEntrada(int *****Aula, int ****Pref, int ***cargaHoraria, int *nProfs,
             pPref = strtok (NULL, " ");
         }
     }
+
     fclose(file);
 }
 
@@ -221,45 +228,45 @@ void ImprimeSol(int ****Aula, int nProfs, int nTurmas, int nDias, int nHorarios)
     }
 }
 
+/*
+    Cria o arquivo simplex.pl a ser lido e resolvido pelo Simplex
+    A saída fica no arquivo sol.txt
+*/
 void criaSimplex(int ****Aula, int ***Pref, int **cargaHoraria,int nProfs, int nTurmas, int nDias, int nHorarios){
     FILE *fileO;
     int i, j, k, l;
 
-    fileO = fopen("simplex.txt","w");
+    fileO = fopen("simplex.pl","w");
 
     if (fileO == NULL){
         printf("\nErro ao abrir o arquivo.\n");
         exit(0);
     }
 
-    fprintf(fileO, "Max ");
+    fprintf(fileO, "Maximize\naula: ");
     for(i = 0; i < nProfs; i++){
-        for(j = 0; j < nDias; j++){
-            for(k = 0; k < nHorarios; k++){
-                fprintf(fileO, "(");
-                for(l = 0; l < nTurmas-1; l++){
-                    fprintf(fileO, "x%d%d%d%d + ", i, l, j, k);
+        for(j = 0; j < nTurmas; j++){
+            for(k = 0; k < nDias; k++){
+                for(l = 0; l < nHorarios; l++){
+                    fprintf(fileO, "+ %d x%d.%d.%d.%d ", Pref[i][k][l], i, j, k, l);
                 }
-                fprintf(fileO, "x%d%d%d%d", i, l, j, k);
-                if((i == nProfs-1) && (j == nDias-1) && (k == nHorarios-1) &&(l == nTurmas-1))
-                    fprintf(fileO, ")*%d", Pref[i][j][k]);
-                else
-                    fprintf(fileO, ")*%d + ", Pref[i][j][k]);
+                //fprintf(fileO, "\n");
             }
         }
     }
 
     fprintf(fileO, "\n\n");
+    fprintf(fileO, "Subject To\n");
 
     for(i = 0; i < nProfs; i++){
         for(j = 0; j < nDias; j++){
             for(k = 0; k < nHorarios; k++){
-                fprintf(fileO, "(");
+                //fprintf(fileO, "rT%d%d%d: (", i, j, k);
                 for(l = 0; l < nTurmas-1; l++){
-                    fprintf(fileO, "x%d%d%d%d + ", i, l, j, k);
+                    fprintf(fileO, "x%d.%d.%d.%d + ", i, l, j, k);
                 }
-                fprintf(fileO, "x%d%d%d%d", i, l, j, k);
-                fprintf(fileO, ") <= 1\n");
+                fprintf(fileO, "x%d.%d.%d.%d", i, l, j, k);
+                fprintf(fileO, " <= 1\n");
             }
         }
     }
@@ -269,12 +276,12 @@ void criaSimplex(int ****Aula, int ***Pref, int **cargaHoraria,int nProfs, int n
     for(i = 0; i < nTurmas; i++){
         for(j = 0; j < nDias; j++){
             for(k = 0; k < nHorarios; k++){
-                fprintf(fileO, "(");
+                fprintf(fileO, "rP%d.%d.%d: ", i, j, k);
                 for(l = 0; l < nProfs-1; l++){
-                    fprintf(fileO, "x%d%d%d%d + ", l, i, j, k);
+                    fprintf(fileO, "x%d.%d.%d.%d + ", l, i, j, k);
                 }
-                fprintf(fileO, "x%d%d%d%d", l, i, j, k);
-                fprintf(fileO, ") <= 1\n");
+                fprintf(fileO, "x%d.%d.%d.%d", l, i, j, k);
+                fprintf(fileO, " <= 1\n");
             }
         }
     }
@@ -283,15 +290,15 @@ void criaSimplex(int ****Aula, int ***Pref, int **cargaHoraria,int nProfs, int n
 
     for(i = 0; i < nProfs; i++){
         for(j = 0; j < nTurmas; j++){
-            fprintf(fileO, "(");
+            fprintf(fileO, "rCH%d.%d: ", i, j);
             for(k = 0; k < nDias; k++){
                 for(l = 0; l < nHorarios; l++){
                     if((k == nDias-1) &&(l == nHorarios-1))
                         break;
-                    fprintf(fileO, "x%d%d%d%d + ", i, j, k, l);
+                    fprintf(fileO, "xx%d.%d.%d.%d + ", i, j, k, l);
                 }
             }
-            fprintf(fileO, "x%d%d%d%d) ", i, j, k, l);
+            fprintf(fileO, "xx%d.%d.%d.%d ", i, j, k, l);
             fprintf(fileO, "<= ");
             fprintf(fileO, "%d\n", cargaHoraria[i][j]);
         }
@@ -302,15 +309,87 @@ void criaSimplex(int ****Aula, int ***Pref, int **cargaHoraria,int nProfs, int n
     for(i = 0; i < nProfs; i++){
         for(j = 0; j < nTurmas; j++){
             for(k = 0; k < nDias; k++){
-                fprintf(fileO, "(");
+                fprintf(fileO, "rHD%d.%d.%d: ", i, j, k);
                 for(l = 0; l < nHorarios-1; l++){
-                    fprintf(fileO, "x%d%d%d%d + ", i, j, k, l);
+                    fprintf(fileO, "x%d.%d.%d.%d + ", i, j, k, l);
                 }
-                fprintf(fileO, "x%d%d%d%d", i, j, k, l);
-                fprintf(fileO, ") <= 4\n");
+                fprintf(fileO, "x%d.%d.%d.%d", i, j, k, l);
+                fprintf(fileO, " <= 4\n");
             }
         }
     }
 
+    fprintf(fileO, "\n");
+    fprintf(fileO, "Binary\n");
+
+    for(i = 0; i < nProfs; i++){
+        for(j = 0; j < nTurmas; j++){
+            for(k = 0; k < nDias; k++){
+                for(l = 0; l < nHorarios; l++){
+                    fprintf(fileO, "x%d.%d.%d.%d\n", i, j, k, l);
+                }
+            }
+        }
+    }
+
+    fprintf(fileO, "End");
     fclose(fileO);
+
+    // Coloque aqui o diretório do seu GLPX
+    system("\"C:\\Program Files (x86)\\GnuWin32\\bin\\glpsol.exe\" --cpxlp simplex.pl -o sol.txt");
+}
+
+/*
+    Cria uma nova instância
+*/
+void criarInstancia(void){
+    FILE *file;
+    int i, j, k;
+    int nProfs, nTurmas, nDias, nHorarios;
+
+    file = fopen("entrada.txt","w");
+    if (file == NULL){
+        printf("\nErro ao abrir o arquivo.\n");
+        exit(0);
+    }
+
+    printf("Voce deseja criar uma instancia com quantos:\n");
+
+    printf("Professores?\n");
+    scanf("%d", &nProfs);
+
+    printf("Turmas?\n");
+    scanf("%d", &nTurmas);
+
+    printf("Dias?\n");
+    scanf("%d", &nDias);
+
+    printf("Horarios?\n");
+    scanf("%d", &nHorarios);
+
+    fprintf(file, "Carga Horaria:\n");
+    for(i = 0; i < nProfs; i++){
+        for(j = 0; j < nTurmas-1; j++){
+            fprintf(file, "%d ", CH);
+        }
+        fprintf(file, "%d", CH);
+        fprintf(file, "\n");
+    }
+
+    fprintf(file, "Preferencia:\n");
+    for(i = 0; i < nProfs; i++){
+        for(j = 0; j < nHorarios; j++){
+            for(k = 0; k < nDias-1; k++){
+                fprintf(file, "%d ", rand()%5);
+            }
+            fprintf(file, "%d", rand()%5);
+            if((i != nProfs-1) || (j != nHorarios-1))
+                fprintf(file, "\n");
+        }
+        if(i != nProfs-1)
+            fprintf(file, "\n");
+    }
+
+    fclose(file);
+    return;
 }
