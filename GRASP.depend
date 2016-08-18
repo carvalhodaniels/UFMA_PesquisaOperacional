@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1471480898 source:f:\daniel\cp\5 periodo\po\grasp\libs.c
+1471550880 source:f:\daniel\cp\5 periodo\po\grasp\libs.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
@@ -8,7 +8,7 @@
 
 1471475578 f:\daniel\cp\5 periodo\po\grasp\libs.h
 
-1471480093 source:f:\daniel\cp\5 periodo\po\grasp\main.c
+1471552405 source:f:\daniel\cp\5 periodo\po\grasp\main.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>

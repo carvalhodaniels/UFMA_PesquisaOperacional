@@ -121,6 +121,7 @@ void SolGulosaAleatoria(int *****Aula, int ***Pref, int **cargaHoraria, int nPro
 
             //Escolhe um Candidato da LRC aleatoriamente
             s = LRC[rand()%nCandidatos];
+
             if(eViavel(*Aula, s, cargaHoraria, nProfs, nTurmas, nDias, nHorarios))
                 (*Aula)[s.prof][s.turma][s.dia][s.horario] = 1;
         }
@@ -134,7 +135,7 @@ void SolGulosaAleatoria(int *****Aula, int ***Pref, int **cargaHoraria, int nPro
 void ConsLRC(int ****Aula, int ***Pref, int **cargaHoraria, Candidato LRC[], int nCandidatos, int Prof, int nProfs, int nTurmas, int nDias, int nHorarios){
     int i, j, k, l, J, K, L, max = 0;
     int pref[nProfs][nDias][nHorarios];
-    Candidato C;
+    //Candidato C;
 
     //Cria uma cópia da mariz de preferência
     for(i = 0; i < nProfs; i++){
@@ -147,15 +148,15 @@ void ConsLRC(int ****Aula, int ***Pref, int **cargaHoraria, Candidato LRC[], int
 
     for(i = 0; i < nCandidatos; i++){
         LRC[i].prof = Prof;
-        C.prof = Prof;
+        //C.prof = Prof;
         for(j = 0; j < nTurmas; j++){
             for(k = 0; k < nDias; k++){
                 for(l = 0; l < nHorarios; l++){
-                    C.turma = j;
-                    C.dia = k;
-                    C.horario = l;
+                    //C.turma = j;
+                    //C.dia = k;
+                    //C.horario = l;
                     //Escolhe o melhor elemento da matriz que seja viável
-                    if(pref[Prof][k][l] > max && eViavel(Aula, C, cargaHoraria, nProfs, nTurmas, nDias, nHorarios)){
+                    if(pref[Prof][k][l] > max){ //&& eViavel(Aula, C, cargaHoraria, nProfs, nTurmas, nDias, nHorarios)){
                         max = pref[Prof][k][l];
                         J = j;
                         K = k;
