@@ -9,7 +9,7 @@
 #define TRUE 1
 #define FALSE 0
 #define rCandidatos 0.2
-#define nTestes 100
+#define nTestes 1000
 #define horarioDiario 4
 #define alpha 0.8
 #define T 1.0
@@ -42,7 +42,7 @@ int ValFunc_Obj(int ****, int ***, int , int , int , int );
 // Troca Soluções
 int ****TrocaSol(int ****, int ****, int , int , int , int );
 
-void AtualizaSol(void);
+void AtualizaSol(int *****, int *****, int ***, int , int , int , int );
 void menu(void);
 
 int main(){
@@ -85,19 +85,37 @@ int main(){
     return TRUE;
 }
 
-void GRASP(int *****Aula, int ****Pref, int ***cargaHoraria, int *nProfs, int *nTurmas, int *nDias, int *nHorarios){
-    DadosEntrada(Aula, Pref, cargaHoraria, nProfs, nTurmas, nDias, nHorarios);
-    do{
-        SolGulosaAleatoria(Aula, *Pref, *cargaHoraria, *nProfs, *nTurmas, *nDias, *nHorarios);
-        //ImprimeSol(*Aula, *nProfs, *nTurmas, *nDias, *nHorarios);
-        Simulated_Annealing(*Aula, *Pref, *cargaHoraria, *nProfs, *nTurmas, *nDias, *nHorarios);
-        AtualizaSol();
-    }while(FALSE);
+void GRASP(int *****melhorSol, int ****Pref, int ***cargaHoraria, int *nProfs, int *nTurmas, int *nDias, int *nHorarios){
+    int ****Aula = NULL;
+    int i, j, k, teste = 0;
 
-    printf("\nProfessores: %d\n", *nProfs);
+    DadosEntrada(&Aula, Pref, cargaHoraria, nProfs, nTurmas, nDias, nHorarios);
+    *melhorSol = criarAula(*melhorSol, *nProfs, *nTurmas, *nDias, *nHorarios);
+
+    do{
+        SolGulosaAleatoria(&Aula, *Pref, *cargaHoraria, *nProfs, *nTurmas, *nDias, *nHorarios);
+        Simulated_Annealing(Aula, *Pref, *cargaHoraria, *nProfs, *nTurmas, *nDias, *nHorarios);
+        AtualizaSol(&Aula, melhorSol, *Pref, *nProfs, *nTurmas, *nDias, *nHorarios);
+        teste++;
+    }while(teste < 10);
+
+    printf("Professores: %d\n", *nProfs);
     printf("Turmas: %d\n", *nTurmas);
     printf("Dias: %d\n", *nDias);
     printf("Horarios: %d\n", *nHorarios);
+    printf("\nMelhor Solucao: ");
+    fObjetivo(*melhorSol, *Pref, *nProfs, *nTurmas, *nDias, *nHorarios);
+    printf("\n");
+
+    for(i = 0; i < *nProfs; i++){
+        for(j = 0; j < *nTurmas; j++){
+            for(k = 0; k < *nDias; k++)
+                free(Aula[i][j][k]);
+            free(Aula[i][j]);
+        }
+        free(Aula[i]);
+    }
+    free(Aula);
 
     return;
 }
@@ -127,8 +145,8 @@ void SolGulosaAleatoria(int *****Aula, int ***Pref, int **cargaHoraria, int nPro
         }
         j++;
     }while(j < nTestes);                            //Quantas vezes quer-se verificar?
-    printf("Guloso:\n");
-    fObjetivo(*Aula, Pref, nProfs, nTurmas, nDias, nHorarios);
+    //printf("Guloso:\n");
+    //fObjetivo(*Aula, Pref, nProfs, nTurmas, nDias, nHorarios);
     return;
 }
 
@@ -221,7 +239,7 @@ void fObjetivo(int ****Aula, int ***Pref, int nProfs, int nTurmas, int nDias, in
             }
         }
     }
-    printf("Funcao Objetivo: %d\n", fObjetivo);
+    printf("%d\n", fObjetivo);
 }
 
 void Simulated_Annealing(int ****Aula, int ***Pref, int **cargaHoraria, int nProfs, int nTurmas, int nDias, int nHorarios)
@@ -258,8 +276,8 @@ void Simulated_Annealing(int ****Aula, int ***Pref, int **cargaHoraria, int nPro
         Te = Te * ax;
         break;
     }
-    printf("Simulated Anneling:\n");
-    fObjetivo(Aula, Pref, nProfs, nTurmas, nDias, nHorarios);
+    //printf("Simulated Anneling:\n");
+    //fObjetivo(Aula, Pref, nProfs, nTurmas, nDias, nHorarios);
 
     // Sempre desalocar alocações dinâmicas
     for(i = 0; i < nProfs; i++){
@@ -310,12 +328,19 @@ int ****BuscaVizinho(int ****Aula, int **cargaHoraria, int nProfs, int nTurmas, 
 int ValFunc_Obj(int ****Aula, int ***Pref, int nProfs, int nTurmas, int nDias, int nHorarios)
 {
     int i, j, k, l, fObjetivo = 0;
-    for(i = 0; i < nProfs; i++)
-        for(j = 0; j < nTurmas; j++)
-            for(k = 0; k < nDias; k++)
-                for(l = 0; l < nHorarios; l++)
-                    if(Aula[i][j][k][l] == 1)
-                        fObjetivo+= Aula[i][j][k][l] * Pref[i][k][l];
+    if(Aula != NULL){
+        for(i = 0; i < nProfs; i++){
+            for(j = 0; j < nTurmas; j++){
+                for(k = 0; k < nDias; k++){
+                    for(l = 0; l < nHorarios; l++){
+                        if(Aula[i][j][k][l] == 1){
+                            fObjetivo+= Aula[i][j][k][l] * Pref[i][k][l];
+                        }
+                    }
+                }
+            }
+        }
+    }
     return fObjetivo;
 }
 
@@ -329,7 +354,32 @@ int ****TrocaSol(int ****A1, int ****A2, int nProfs, int nTurmas, int  nDias, in
     return A1;
 }
 
-void AtualizaSol(void){
+void AtualizaSol(int *****Sol1, int *****Sol2, int ***Pref, int nProfs, int nTurmas, int nDias, int nHorarios){
+    int i, j, k, l;
+    if(ValFunc_Obj(*Sol1, Pref, nProfs, nTurmas, nDias, nHorarios) > ValFunc_Obj(*Sol2, Pref, nProfs, nTurmas, nDias, nHorarios)){
+        for(i = 0; i < nProfs; i++){
+            for(j = 0; j < nTurmas; j++){
+                for(k = 0; k < nDias; k++){
+                    for(l = 0; l < nHorarios; l++){
+                        (*Sol2)[i][j][k][l] = (*Sol1)[i][j][k][l];
+                    }
+                }
+            }
+        }
+    }
+
+
+    for(i = 0; i < nProfs; i++){
+        for(j = 0; j < nTurmas; j++){
+            for(k = 0; k < nDias; k++){
+                for(l = 0; l < nHorarios; l++){
+                    (*Sol1)[i][j][k][l] = 0;
+                }
+            }
+        }
+    }
+
+    return;
 }
 
 void menu(void){
