@@ -1,5 +1,5 @@
-# PO
-Pesquisa Operacional
+# UFMA_PesquisaOperacional
+Projeto da disciplina Pesquisa Operacional, com o objetivo de criar um software que organize uma grade de aulas com base nas preferências de cada professor, para testar e demonstrar a meta-heurística GRASP (Greedy Randomized Adaptive Search Procedure).
 
 GRASP
 
